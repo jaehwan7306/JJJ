@@ -78,13 +78,46 @@ RTX 5070 노트북에서는 아래와 같은 단계로 진행하되 `configs/rtx
 ```bash
 python -m contractnli download
 python -m contractnli run --config configs/rtx5070.toml --preflight
-python -m contractnli run --config configs/rtx5070.toml --max-documents 1 --output-dir outputs/rtx5070_smoke
-python -m contractnli run --config configs/rtx5070.toml
+python tools/llmlingua_prefix_compat.py --config configs/rtx5070.toml --max-documents 1 --output-dir outputs/rtx5070_smoke
+python tools/llmlingua_prefix_compat.py --config configs/rtx5070.toml
 ```
 
 노트북에서는 5번부터 데이터 준비 → 입력 길이 검증 → 한 문서 smoke run → 전체 실행 순으로 진행합니다. **7번 셀을 중지하지 말고 `Smoke run completed: True` 출력 및 셀 실행 종료를 기다리세요.** 그 다음 8번 셀의 `RUN_FULL_EXPERIMENT`만 `True`로 바꾸고 8번 셀을 실행합니다. 최초 모델 다운로드가 끝난 뒤에도 압축·판단이 계속되므로 다운로드 100%를 실험 완료로 보지 않습니다. 완료되지 않은 smoke run은 전체 실행을 시작할 수 없도록 확인합니다. 노트북에서 데이터 준비와 실험 실행은 Python 함수를 직접 호출하므로 `python -m ...` 명령을 그대로 Python 셀에 입력할 필요가 없습니다.
 
 중간에 중지했다면 같은 smoke 셀을 다시 실행하면 됩니다. 기존 결과와 모델 다운로드 캐시는 유지하세요. 노트북의 환경 확인 셀은 Hugging Face import 전에 다운로드 timeout 120초, 메타데이터 timeout 30초를 설정합니다. 이 값은 모델이나 실험 설정을 바꾸지 않습니다.
+
+### LongLLMLingua `get_prefix_length`의 AssertionError
+
+LLMLingua 0.2.2는 질문과 문맥의 토큰 경계를 찾은 뒤, 토큰을 decode한 문자열이 원문 앞 100문자와 정확히 같다고 검사합니다. 토크나이저의 공백·문장부호 정리 등으로 문자열 왕복 변환이 달라지면 이 검사가 실패할 수 있습니다.
+
+두 실행 노트북에는 설정 셀 앞에 **3-1번 호환 보정 셀**이 있습니다. `tools/llmlingua_prefix_compat.py`가 기존 경계 계산을 먼저 사용하고, AssertionError가 난 경우에만 fast tokenizer의 원문 문자 위치로 경계를 검증합니다. 토큰이 질문과 문맥의 경계를 가로지르는 등 안전한 분리가 불가능하면 중단합니다. 원문이나 토큰 ID를 고치거나 assertion을 무조건 통과시키지 않습니다.
+
+기존 결과를 재사용할 수 있도록 `src/contractnli` 본체는 바꾸지 않습니다. 기존 소스·데이터·설정 signature 및 모델/런타임 검사는 유지하고, 보정 파일의 버전과 별도 SHA256을 `run.json`의 `compatibility_patches`에 기록·검사합니다. 이전에 정상 생성된 요약·압축·판단 파일은 수정하지 않습니다. 모델 다운로드 캐시도 유지합니다.
+
+진행 중 이 오류가 발생했다면 현재 노트북에 다음 셀을 추가한 뒤, 커널을 재시작하고 환경·GPU·보정·설정·데이터 셀을 실행하세요. 이 파일만 최신 코드에서 프로젝트의 `tools` 폴더로 복사하면 되며 패키지를 재설치할 필요가 없습니다.
+
+```python
+import runpy
+patch = runpy.run_path(
+    str(PROJECT_ROOT / "tools/llmlingua_prefix_compat.py"),
+    run_name="contractnli_prefix_compat",
+)
+patch["apply_prefix_fix"]()
+```
+
+설정·데이터 셀 실행 후에는 캐시의 실제 토크나이저만으로 특정 실패 항목을 확인할 수도 있습니다. 예를 들어 마지막 완료 로그가 `442/2091: 49/nda-4`였다면 다음 항목은 아래와 같습니다. 이 검사는 가중치를 로딩하지 않습니다.
+
+```python
+print(patch["validate_prefix_case"](BASE_CONFIG, "50", "nda-11"))
+```
+
+7번 셀을 재실행해 완료된 smoke 결과를 불러오고, 8번 셀을 재실행하면 저장된 전체 실험의 마지막 완료 항목 다음부터 이어집니다. 기존 `outputs`와 Hugging Face 캐시는 유지하세요. 이 오류를 해결하려고 `condition_compare`나 LongLLMLingua 설정을 바꿀 필요가 없습니다.
+
+터미널에서는 보정 적용 진입점으로 실행합니다.
+
+```bash
+python tools/llmlingua_prefix_compat.py --config configs/rtx5070.toml
+```
 
 아래는 노트북 대신 **프로젝트 가상환경을 선택한 터미널**에서 실행할 때의 명령입니다.
 
@@ -94,9 +127,9 @@ python -m contractnli run --config configs/base.toml --dry-run
 # 가중치를 로딩하기 전 토크나이저만으로 전체 입력 길이 확인
 python -m contractnli run --config configs/base.toml --preflight
 # 먼저 한 문서 smoke run: 본 실험과 출력 디렉터리를 구분
-python -m contractnli run --config configs/base.toml --max-documents 1 --output-dir outputs/rtx3070_smoke
+python tools/llmlingua_prefix_compat.py --config configs/base.toml --max-documents 1 --output-dir outputs/rtx3070_smoke
 # 전체 123문서, 2,091문제 × 4조건
-python -m contractnli run --config configs/base.toml
+python tools/llmlingua_prefix_compat.py --config configs/base.toml
 ```
 
 다운로더는 공식 저장소의 고정 commit ZIP을 받고 SHA256을 검증합니다. JSON과 LICENSE/TERMS만 추출하고 PDF는 추출하지 않습니다. 오프라인에서는 `download --archive /path/to/contract-nli.zip`을 사용할 수 있으며 동일한 체크섬을 검증합니다. 공식 ContractNLI 데이터는 CC BY 4.0이며 원 저자 표시와 데이터 이용 조건을 확인하세요.
@@ -116,12 +149,12 @@ python -m contractnli run --config configs/base.toml
 
 ```bash
 # 문서별 요약
-python -m contractnli run --stage summarize
+python tools/llmlingua_prefix_compat.py --stage summarize
 # 질문별 LongLLMLingua 압축
-python -m contractnli run --stage compress
+python tools/llmlingua_prefix_compat.py --stage compress
 # 동일한 네 문맥을 동일 판단 모델로 평가
-python -m contractnli run --stage judge
-python -m contractnli run --stage report
+python tools/llmlingua_prefix_compat.py --stage judge
+python tools/llmlingua_prefix_compat.py --stage report
 ```
 
 결과는 `outputs/rtx3070_base/`에 유지합니다. 여러 노트북이나 프로세스에서 같은 실험을 동시에 실행하지 마세요. 중단 후 같은 실행 셀이나 명령을 다시 실행하면 완료된 항목을 재사용합니다. `contexts.jsonl`, `predictions.jsonl`, `run.json`을 보존해야 합니다.
