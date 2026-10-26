@@ -1,6 +1,6 @@
 # ContractNLI 문맥 압축 메인 실험
 
-현재 기본 실행 환경은 **Windows · PyCharm Jupyter Notebook · Python 3.11.9 · RTX 3070 한 대**입니다. [실행 노트북](notebooks/run_base_pycharm.ipynb)을 PyCharm에서 열고 순서대로 실행하세요.
+현재 기본 실행 환경은 **Windows · PyCharm Jupyter Notebook · Python 3.11.9 · NVIDIA GPU 한 대**입니다. 실제 GPU는 실행 시 자동 인식합니다. [실행 노트북](notebooks/run_base_pycharm.ipynb)을 PyCharm에서 열고 순서대로 실행하세요.
 
 Proposal의 메인 4조건만 비교합니다. Token-budget sweep, ablation, 의미적 evidence 보존 분석은 포함하지 않습니다.
 
@@ -49,7 +49,9 @@ python -m pip install jupyter ipykernel
 
 ## 데이터 준비와 첫 실행
 
-노트북에서는 5번부터 데이터 준비 → 입력 길이 검증 → 한 문서 smoke run → 전체 실행 순으로 진행합니다. 전체 실행 셀의 `RUN_FULL_EXPERIMENT = True`는 smoke run 성공 후 설정하세요. 노트북에서 데이터 준비와 실험 실행은 Python 함수를 직접 호출하므로 `python -m ...` 명령을 그대로 Python 셀에 입력할 필요가 없습니다.
+노트북에서는 5번부터 데이터 준비 → 입력 길이 검증 → 한 문서 smoke run → 전체 실행 순으로 진행합니다. **7번 셀을 중지하지 말고 `Smoke run completed: True` 출력 및 셀 실행 종료를 기다리세요.** 그 다음 8번 셀의 `RUN_FULL_EXPERIMENT`만 `True`로 바꾸고 8번 셀을 실행합니다. 최초 모델 다운로드가 끝난 뒤에도 압축·판단이 계속되므로 다운로드 100%를 실험 완료로 보지 않습니다. 완료되지 않은 smoke run은 전체 실행을 시작할 수 없도록 확인합니다. 노트북에서 데이터 준비와 실험 실행은 Python 함수를 직접 호출하므로 `python -m ...` 명령을 그대로 Python 셀에 입력할 필요가 없습니다.
+
+중간에 중지했다면 같은 smoke 셀을 다시 실행하면 됩니다. 기존 결과와 모델 다운로드 캐시는 유지하세요. 노트북의 환경 확인 셀은 Hugging Face import 전에 다운로드 timeout 120초, 메타데이터 timeout 30초를 설정합니다. 이 값은 모델이나 실험 설정을 바꾸지 않습니다.
 
 아래는 노트북 대신 **프로젝트 가상환경을 선택한 터미널**에서 실행할 때의 명령입니다.
 
@@ -68,7 +70,7 @@ python -m contractnli run --config configs/base.toml
 
 전체 실험은 문서 요약 246회, 질문별 압축 2,091회, 판단 8,364회입니다. `--dry-run`은 실제 모델 추론이나 정확도 산출을 하지 않습니다. `--preflight`는 토큰 길이만 확인하며 GPU VRAM 검증은 smoke run이 담당합니다.
 
-## RTX 3070 한 PC에서 순차 실행
+## GPU 한 대에서 순차 실행
 
 `run --stage all` 또는 노트북의 `Experiment(BASE_CONFIG).run("all")`은 다음 순서로 실행합니다. **각 모델은 다음 모델을 로딩하기 전에 해제**되며, 모델 병렬화·여러 GPU·두 PC 간 파일 인계가 필요하지 않습니다.
 
@@ -90,6 +92,8 @@ python -m contractnli run --stage report
 ```
 
 결과는 `outputs/rtx3070_base/`에 유지합니다. 여러 노트북이나 프로세스에서 같은 실험을 동시에 실행하지 마세요. 중단 후 같은 실행 셀이나 명령을 다시 실행하면 완료된 항목을 재사용합니다. `contexts.jsonl`, `predictions.jsonl`, `run.json`을 보존해야 합니다.
+
+출력 폴더 이름의 `rtx3070`은 기존 결과와의 호환을 위해 유지한 이름이며 GPU 모델을 제한하지 않습니다. 실제 GPU는 `run.json`에 기록합니다. 다른 GPU에서도 실행할 수 있지만 새 장치에서 메모리 적재를 다시 확인해야 합니다.
 
 데이터 내용·설정·소스가 달라지면 이전 결과 재사용을 거부합니다. 각 역할별 실제 모델 revision, 패키지 버전, 장치·양자화·attention 설정을 저장하고 변경을 감지합니다. 재현 실험에는 `revision = "main"` 대신 Hugging Face의 고정 commit SHA를 설정하는 편이 좋습니다. 최초 실행의 실제 revision은 `run.json`에서 확인할 수 있습니다. 이번 버전은 기본 출력 폴더를 새로 지정했으므로 이전 `outputs/base/`를 덮어쓰지 않습니다.
 
@@ -133,7 +137,7 @@ Qwen3 지원을 위해 Transformers 4.51.3을 고정했습니다. LLMLingua 0.2.
 - **Actual token retention**: 압축문/원문 토큰 수. 문항별 비율 평균과 전체 토큰 합의 비율을 모두 제공합니다.
 - **Total inference seconds**: 해당 조건의 실제 압축 호출 시간 합 + 판단 시간 합. Naive·Contextualized 문서 요약은 한 번만 계산하므로 17번 중복 합산하지 않습니다. LongLLMLingua는 가설마다 계산합니다. 문항당 상각 시간도 제공합니다.
 
-시간에는 호출 내부 토큰화와 추론을 포함하며 모델 다운로드·로딩, 체크포인트 I/O는 제외합니다. RTX 3070 한 대에서 모든 조건을 실행하고 역할별 장치를 기록합니다. 같은 명령 재실행은 저장된 시간을 재사용하며 새 속도 측정이 아닙니다. 현재 스크립트는 별도의 warmup/반복 측정/통계적 유의성 검정을 하지 않습니다.
+시간에는 호출 내부 토큰화와 추론을 포함하며 모델 다운로드·로딩, 체크포인트 I/O는 제외합니다. 선택한 GPU 한 대에서 모든 조건을 실행하고 역할별 장치를 기록합니다. 같은 명령 재실행은 저장된 시간을 재사용하며 새 속도 측정이 아닙니다. 현재 스크립트는 별도의 warmup/반복 측정/통계적 유의성 검정을 하지 않습니다.
 
 Gold evidence는 후속 분석에 사용할 수 있도록 저장합니다. **단어가 겹친다는 이유로 의미적 근거 보존으로 간주하는 점수는 만들지 않습니다.** NotMentioned에도 분류·flip·판단 보존 지표는 동일하게 적용됩니다.
 
