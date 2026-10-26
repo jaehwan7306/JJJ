@@ -2,6 +2,8 @@
 
 현재 기본 실행 환경은 **Windows · PyCharm Jupyter Notebook · Python 3.11.9 · NVIDIA GPU 한 대**입니다. 실제 GPU는 실행 시 자동 인식합니다. [실행 노트북](notebooks/run_base_pycharm.ipynb)을 PyCharm에서 열고 순서대로 실행하세요.
 
+**RTX 5070에서 새로 진행한다면 [RTX 5070 전용 노트북](notebooks/run_base_rtx5070_pycharm.ipynb)을 사용하세요.** PyTorch 2.8.0/CUDA 12.8과 bitsandbytes 0.48.1을 설치하며, 기존 CUDA 12.4 노트북과 설치 셀이 다릅니다. 실험 모델·4조건·3개 라벨·30% 목표는 같습니다.
+
 Proposal의 메인 4조건만 비교합니다. Token-budget sweep, ablation, 의미적 evidence 보존 분석은 포함하지 않습니다.
 
 | 조건 | 문맥 구성 | 사용 모델 | 호출 단위 |
@@ -27,6 +29,28 @@ Proposal의 메인 4조건만 비교합니다. Token-budget sweep, ablation, 의
 
 ## 설치
 
+### RTX 5070 — Windows Blackwell
+
+PyCharm의 프로젝트와 Jupyter 커널 모두 **Python 3.11.9 기반 새 가상환경**을 선택하고 [RTX 5070 전용 노트북](notebooks/run_base_rtx5070_pycharm.ipynb)을 여세요. 각 설치 셀은 다음과 같습니다.
+
+```python
+%pip install --upgrade pip
+%pip install --upgrade torch==2.8.0 --index-url https://download.pytorch.org/whl/cu128
+%pip install -e ".[inference,quantization,longllmlingua,rtx5070]"
+```
+
+설치 후 **커널을 재시작**하고 첫 환경 확인 셀부터 다시 진행합니다. GPU 확인 셀은 CUDA 연산과 bitsandbytes NF4 4bit 연산을 실제로 수행합니다. `CUDA available: True`만으로 호환성을 판단하지 않습니다. **`CUDA tensor test: PASS`와 `bitsandbytes NF4 test: PASS`가 모두 나와야 다음 단계로 진행하세요.**
+
+이 노트북은 `configs/rtx5070.toml`을 읽고, smoke 결과는 `outputs/rtx5070_smoke/`, 전체 실험은 `outputs/rtx5070_base/`에 저장합니다. 이전 PC의 테스트 출력은 이 폴더로 복사하지 않습니다. 새 PC에서도 7번 smoke 셀의 `Smoke run completed: True` 및 실행 종료를 확인한 뒤 8번의 `RUN_FULL_EXPERIMENT`를 `True`로 바꿉니다.
+
+스크린샷의 전체 그래픽 메모리는 공유 시스템 RAM을 포함합니다. 모델 적재에 사용하는 전용 VRAM은 약 12GB이므로 4bit·한 모델씩 로딩·배치 1은 유지합니다.
+
+설치 조합의 근거: [공식 CUDA 12.8 wheel 목록](https://download.pytorch.org/whl/cu128/torch/), [PyTorch 2.8.0 빌드의 compute capability 12.0 지원](https://github.com/pytorch/pytorch/blob/v2.8.0/.ci/manywheel/build_cuda.sh), [bitsandbytes 0.48.1의 Windows sm120 지원](https://github.com/bitsandbytes-foundation/bitsandbytes/blob/0.48.1/docs/source/installation.mdx).
+
+### 이전 RTX 30/40 시리즈 환경
+
+아래는 기존 `run_base_pycharm.ipynb`의 설치 안내입니다. RTX 5070은 위의 전용 설치 조합을 사용하세요.
+
 PyCharm에서 프로젝트 인터프리터를 **Python 3.11.9 기반 가상환경**으로 설정하고, 노트북의 커널도 같은 환경으로 선택하세요. 예를 들어 프로젝트 환경이 `.venv`라면 커널의 Python 실행 파일은 `.venv\Scripts\python.exe`입니다. Jupyter 서버를 실행할 패키지가 없다면, 해당 환경을 선택한 **PyCharm Terminal**에서 다음을 실행하세요.
 
 ```powershell
@@ -48,6 +72,15 @@ python -m pip install jupyter ipykernel
 모델은 Hugging Face에서 최초 다운로드됩니다. 공개 모델 기준으로 API 키는 필수 설정이 아닙니다. 자체 서버/API를 호출하는 코드는 없습니다. 모델 가중치와 캐시를 위한 디스크 공간을 확보하세요.
 
 ## 데이터 준비와 첫 실행
+
+RTX 5070 노트북에서는 아래와 같은 단계로 진행하되 `configs/rtx5070.toml`과 전용 출력 폴더를 사용합니다. 터미널에서 실행할 때는 다음과 같습니다.
+
+```bash
+python -m contractnli download
+python -m contractnli run --config configs/rtx5070.toml --preflight
+python -m contractnli run --config configs/rtx5070.toml --max-documents 1 --output-dir outputs/rtx5070_smoke
+python -m contractnli run --config configs/rtx5070.toml
+```
 
 노트북에서는 5번부터 데이터 준비 → 입력 길이 검증 → 한 문서 smoke run → 전체 실행 순으로 진행합니다. **7번 셀을 중지하지 말고 `Smoke run completed: True` 출력 및 셀 실행 종료를 기다리세요.** 그 다음 8번 셀의 `RUN_FULL_EXPERIMENT`만 `True`로 바꾸고 8번 셀을 실행합니다. 최초 모델 다운로드가 끝난 뒤에도 압축·판단이 계속되므로 다운로드 100%를 실험 완료로 보지 않습니다. 완료되지 않은 smoke run은 전체 실행을 시작할 수 없도록 확인합니다. 노트북에서 데이터 준비와 실험 실행은 Python 함수를 직접 호출하므로 `python -m ...` 명령을 그대로 Python 셀에 입력할 필요가 없습니다.
 
