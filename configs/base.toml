@@ -1,0 +1,36 @@
+# Run from the repository root. Paths are relative to the working directory.
+dataset = "data/contract-nli/test.json"
+output_dir = "outputs/base"
+conditions = ["original", "naive", "contextualized", "longllmlingua"]
+# Keep approximately 30% of original context tokens (remove approximately 70%).
+# Common counting tokenizer: judge model. Actual retention is recorded separately.
+retention_ratio = 0.30
+judge_max_new_tokens = 16
+seed = 42
+# For a smoke run, uncomment this and use a distinct output directory.
+# max_documents = 2
+
+[summarizer]
+name = "Qwen/Qwen2.5-7B-Instruct"
+revision = "main"
+device = "cuda"
+dtype = "float16"
+quantization = "4bit"
+max_input_tokens = 32768
+
+[judge]
+name = "Qwen/Qwen3-8B"
+revision = "main"
+device = "cuda"
+dtype = "float16"
+quantization = "4bit"
+max_input_tokens = 32768
+
+[compressor]
+# LongLLMLingua scoring model (not the judge or summarization model).
+name = "NousResearch/Llama-2-7b-hf"
+revision = "main"
+device = "cuda"
+dtype = "float16"
+quantization = "4bit"
+max_input_tokens = 4096

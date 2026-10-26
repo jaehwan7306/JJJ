@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "contractnli-compression"
+version = "0.1.0"
+description = "Reproducible ContractNLI context-compression baseline experiments"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+inference = ["torch>=2.6,<2.9", "transformers==4.51.3", "accelerate>=1.2,<2", "safetensors>=0.4"]
+quantization = ["bitsandbytes>=0.45,<1"]
+longllmlingua = ["llmlingua==0.2.2", "sentencepiece>=0.2", "protobuf>=4"]
+
+[project.scripts]
+contractnli = "contractnli.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
