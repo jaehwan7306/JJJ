@@ -15,7 +15,7 @@ from . import prompts
 from .backend import TransformersBackend
 from .compression import LongLLMLinguaBackend
 from .config import Config
-from .data import Dataset, LABELS, load_dataset
+from .data import Dataset, load_dataset
 from .metrics import classification, mean, paired_metrics
 from .storage import JsonlStore, digest, write_json
 

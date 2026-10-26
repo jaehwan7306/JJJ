@@ -1,6 +1,8 @@
+# Windows + PyCharm Jupyter + Python 3.11.9 + one RTX 3070.
 # Run from the repository root. Paths are relative to the working directory.
+# One model at a time on cuda:0, NF4 4bit, float16, SDPA, batch size 1.
 dataset = "data/contract-nli/test.json"
-output_dir = "outputs/base"
+output_dir = "outputs/rtx3070_base"
 conditions = ["original", "naive", "contextualized", "longllmlingua"]
 # Keep approximately 30% of original context tokens (remove approximately 70%).
 # Common counting tokenizer: judge model. Actual retention is recorded separately.

@@ -45,6 +45,7 @@ class TransformersBackend:
                                                        trust_remote_code=False)
         kwargs = {"revision": config.revision, "trust_remote_code": False,
                   "torch_dtype": getattr(torch, config.dtype),
+                  "attn_implementation": "sdpa", "low_cpu_mem_usage": True,
                   "device_map": {"": 0 if config.device == "cuda" else "cpu"}}
         if config.quantization == "4bit":
             kwargs["quantization_config"] = BitsAndBytesConfig(
@@ -61,6 +62,7 @@ class TransformersBackend:
                          "tokenizer_revision": tokenizer_commit,
                          "device": str(self.model.device), "dtype": config.dtype,
                          "quantization": config.quantization,
+                         "attention_implementation": "sdpa", "inference_batch_size": 1,
                          "device_name": torch.cuda.get_device_name(0) if config.device == "cuda" else "cpu"}
 
     def count_tokens(self, text: str) -> int:

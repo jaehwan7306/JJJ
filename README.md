@@ -1,5 +1,7 @@
 # ContractNLI 문맥 압축 메인 실험
 
+현재 기본 실행 환경은 **Windows · PyCharm Jupyter Notebook · Python 3.11.9 · RTX 3070 한 대**입니다. [실행 노트북](notebooks/run_base_pycharm.ipynb)을 PyCharm에서 열고 순서대로 실행하세요.
+
 Proposal의 메인 4조건만 비교합니다. Token-budget sweep, ablation, 의미적 evidence 보존 분석은 포함하지 않습니다.
 
 | 조건 | 문맥 구성 | 사용 모델 | 호출 단위 |
@@ -25,31 +27,39 @@ Proposal의 메인 4조건만 비교합니다. Token-budget sweep, ablation, 의
 
 ## 설치
 
-Python 3.11 또는 3.12와 NVIDIA 드라이버가 있는 환경에서 저장소 루트로 이동하세요. 아래 활성화 명령은 Linux/WSL 기준입니다. Windows PowerShell에서는 `\.venv\Scripts\Activate.ps1`로 활성화한 뒤 같은 `python -m ...` 명령을 사용할 수 있습니다.
+PyCharm에서 프로젝트 인터프리터를 **Python 3.11.9 기반 가상환경**으로 설정하고, 노트북의 커널도 같은 환경으로 선택하세요. 예를 들어 프로젝트 환경이 `.venv`라면 커널의 Python 실행 파일은 `.venv\Scripts\python.exe`입니다. Jupyter 서버를 실행할 패키지가 없다면, 해당 환경을 선택한 **PyCharm Terminal**에서 다음을 실행하세요.
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-# RTX 30/40 시리즈용 예시. 드라이버 호환성은 PyTorch 공식 설치 안내를 확인하세요.
-python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124
-python -m pip install -e '.[inference,quantization,longllmlingua]'
-python -c "import torch; print(torch.__version__); print(torch.cuda.is_available()); print(torch.cuda.get_device_properties(0))"
+```powershell
+python -m pip install jupyter ipykernel
 ```
 
-두 PC 모두 같은 설치 명령과 소스 버전을 사용하세요. `nvidia-smi`로 실제 GPU 모델·VRAM을 확인하세요. 12GB GPU에 맞춰 4bit를 기본값으로 정했지만 모든 긴 입력의 적재를 보장하지는 않습니다. OOM이 발생하면 먼저 다른 GPU 프로세스를 종료하고 해당 단계를 재실행하세요. 길이 제한을 낮추거나 원문을 자르면 Original 조건의 의미가 바뀌므로 자동으로 수행하지 않습니다.
+[notebooks/run_base_pycharm.ipynb](notebooks/run_base_pycharm.ipynb)의 첫 셀에서 Python 버전·실행 파일 경로·프로젝트 루트를 확인합니다. 아래 설치 명령은 **Jupyter 코드 셀**에 각각 입력합니다. `python -m venv`나 `source`를 Python 셀에 입력하지 않습니다.
+
+```python
+%pip install --upgrade pip
+%pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+%pip install -e ".[inference,quantization,longllmlingua]"
+```
+
+설치 후 **Restart Kernel**을 실행하세요. 그 다음 노트북의 첫 환경 확인 셀을 다시 실행하고 설치 셀을 건너뛰어 GPU 확인으로 이동합니다. 설치 직후 커널을 재시작하기 전에는 GPU 추론을 시작하지 않습니다.
+
+노트북은 torch import 전에 `CUDA_VISIBLE_DEVICES=0`으로 GPU 한 개만 노출합니다. 실제 GPU 모델·VRAM·현재 여유 VRAM을 직접 출력합니다. 4bit·float16·SDPA attention·배치 1로 메모리를 줄이고, 요약/압축/판단 모델을 순서대로 하나씩 올립니다. **3070 한 대에서 모든 긴 입력이 적재된다는 보장은 없습니다.** 먼저 한 문서로 검증하세요. OOM이 발생하면 다른 GPU 프로그램을 종료하고 커널을 재시작한 뒤 저장된 결과부터 재개합니다. 길이 제한을 낮추거나 원문을 자르면 Original 조건의 의미가 바뀌므로 자동으로 수행하지 않습니다.
 
 모델은 Hugging Face에서 최초 다운로드됩니다. 공개 모델 기준으로 API 키는 필수 설정이 아닙니다. 자체 서버/API를 호출하는 코드는 없습니다. 모델 가중치와 캐시를 위한 디스크 공간을 확보하세요.
 
 ## 데이터 준비와 첫 실행
+
+노트북에서는 5번부터 데이터 준비 → 입력 길이 검증 → 한 문서 smoke run → 전체 실행 순으로 진행합니다. 전체 실행 셀의 `RUN_FULL_EXPERIMENT = True`는 smoke run 성공 후 설정하세요. 노트북에서 데이터 준비와 실험 실행은 Python 함수를 직접 호출하므로 `python -m ...` 명령을 그대로 Python 셀에 입력할 필요가 없습니다.
+
+아래는 노트북 대신 **프로젝트 가상환경을 선택한 터미널**에서 실행할 때의 명령입니다.
 
 ```bash
 python -m contractnli download
 python -m contractnli run --config configs/base.toml --dry-run
 # 가중치를 로딩하기 전 토크나이저만으로 전체 입력 길이 확인
 python -m contractnli run --config configs/base.toml --preflight
-# 먼저 2문서 smoke run: 본 실험과 출력 디렉터리를 구분
-python -m contractnli run --config configs/base.toml --max-documents 2 --output-dir outputs/smoke
+# 먼저 한 문서 smoke run: 본 실험과 출력 디렉터리를 구분
+python -m contractnli run --config configs/base.toml --max-documents 1 --output-dir outputs/rtx3070_smoke
 # 전체 123문서, 2,091문제 × 4조건
 python -m contractnli run --config configs/base.toml
 ```
@@ -58,23 +68,30 @@ python -m contractnli run --config configs/base.toml
 
 전체 실험은 문서 요약 246회, 질문별 압축 2,091회, 판단 8,364회입니다. `--dry-run`은 실제 모델 추론이나 정확도 산출을 하지 않습니다. `--preflight`는 토큰 길이만 확인하며 GPU VRAM 검증은 smoke run이 담당합니다.
 
-## 두 PC에서 단계 나누기
+## RTX 3070 한 PC에서 순차 실행
 
-아래 예시는 **동시 실행이 아닌 순차 인계**입니다. 모델 세 개를 같은 GPU에 함께 올리지 않습니다.
+`run --stage all` 또는 노트북의 `Experiment(BASE_CONFIG).run("all")`은 다음 순서로 실행합니다. **각 모델은 다음 모델을 로딩하기 전에 해제**되며, 모델 병렬화·여러 GPU·두 PC 간 파일 인계가 필요하지 않습니다.
+
+1. Qwen2.5-7B-Instruct 로딩 → Naive·Contextualized 요약 생성 → 모델 해제.
+2. 기본 Llama-2-7B scorer 로딩 → 가설별 LongLLMLingua 압축 → 모델 해제.
+3. Qwen3-8B 로딩 → 4조건 판단 → 모델 해제.
+4. 전체 예측이 완료되면 결과 JSON·CSV 생성.
+
+필요하면 **같은 PC에서** 단계별로 나누어 실행할 수도 있습니다. 다음은 터미널 명령입니다.
 
 ```bash
-# PC A: 문서별 요약
+# 문서별 요약
 python -m contractnli run --stage summarize
-# PC A 또는 PC B: LongLLMLingua 압축
+# 질문별 LongLLMLingua 압축
 python -m contractnli run --stage compress
-# 그 뒤 PC B: 동일한 네 문맥을 동일 판단 모델로 평가
+# 동일한 네 문맥을 동일 판단 모델로 평가
 python -m contractnli run --stage judge
 python -m contractnli run --stage report
 ```
 
-각 단계 완료 후 저장소의 **같은 소스·설정·데이터와 `outputs/base/` 전체**를 다음 PC로 복사하세요. `contexts.jsonl`, `predictions.jsonl`, `run.json`을 함께 옮겨야 합니다. 실행 중에는 복사하지 마세요. 두 PC가 같은 출력 디렉터리에 동시에 기록하거나 결과를 단순 연결하면 안 됩니다. 입력/출력 절대 경로만 달라지는 것은 허용합니다.
+결과는 `outputs/rtx3070_base/`에 유지합니다. 여러 노트북이나 프로세스에서 같은 실험을 동시에 실행하지 마세요. 중단 후 같은 실행 셀이나 명령을 다시 실행하면 완료된 항목을 재사용합니다. `contexts.jsonl`, `predictions.jsonl`, `run.json`을 보존해야 합니다.
 
-다시 같은 명령을 실행하면 완료된 항목을 재사용합니다. 데이터 내용·설정·소스가 달라지면 이전 결과 재사용을 거부합니다. 각 역할별 실제 모델 revision, 패키지 버전, 장치·양자화 설정을 저장하고 변경을 감지합니다. **한 역할을 도중에 다른 GPU/런타임으로 옮겨 이어 붙이는 것은 허용하지 않습니다.** 서로 다른 역할을 PC별로 나누는 것은 가능합니다. 재현 실험에는 `revision = "main"` 대신 Hugging Face의 고정 commit SHA를 설정하는 편이 좋습니다. 최초 실행의 실제 revision은 `run.json`에서 확인할 수 있습니다.
+데이터 내용·설정·소스가 달라지면 이전 결과 재사용을 거부합니다. 각 역할별 실제 모델 revision, 패키지 버전, 장치·양자화·attention 설정을 저장하고 변경을 감지합니다. 재현 실험에는 `revision = "main"` 대신 Hugging Face의 고정 commit SHA를 설정하는 편이 좋습니다. 최초 실행의 실제 revision은 `run.json`에서 확인할 수 있습니다. 이번 버전은 기본 출력 폴더를 새로 지정했으므로 이전 `outputs/base/`를 덮어쓰지 않습니다.
 
 강제 종료로 `.run.lock`만 남았다면 해당 프로세스가 종료됐음을 확인한 후 잠금 파일만 제거하세요. JSONL 마지막 줄이 쓰다 끊겼다면 원본을 백업하고 불완전한 마지막 줄을 복구해야 합니다. 잘못된 줄을 조용히 무시하지 않습니다.
 
@@ -99,7 +116,7 @@ Qwen3 지원을 위해 Transformers 4.51.3을 고정했습니다. LLMLingua 0.2.
 
 ## 출력과 지표 정의
 
-`outputs/base/`:
+`outputs/rtx3070_base/` (전체 실험), `outputs/rtx3070_smoke/` (한 문서 검증):
 
 - `run.json`: 설정, 데이터·코드 fingerprint, 모델 revision, 역할별 GPU·패키지 버전.
 - `contexts.jsonl`: 재사용할 요약과 질문별 압축문, 원문/압축 토큰 수, 실제 보존 비율, 처리시간, 종료 사유.
@@ -116,7 +133,7 @@ Qwen3 지원을 위해 Transformers 4.51.3을 고정했습니다. LLMLingua 0.2.
 - **Actual token retention**: 압축문/원문 토큰 수. 문항별 비율 평균과 전체 토큰 합의 비율을 모두 제공합니다.
 - **Total inference seconds**: 해당 조건의 실제 압축 호출 시간 합 + 판단 시간 합. Naive·Contextualized 문서 요약은 한 번만 계산하므로 17번 중복 합산하지 않습니다. LongLLMLingua는 가설마다 계산합니다. 문항당 상각 시간도 제공합니다.
 
-시간에는 호출 내부 토큰화와 추론을 포함하며 모델 다운로드·로딩, 체크포인트 I/O는 제외합니다. 별도 GPU의 속도 차이가 처리시간 비교에 영향을 줄 수 있으므로 역할별 장치를 함께 보고하세요. 같은 명령 재실행은 저장된 시간을 재사용하며 새 속도 측정이 아닙니다. 현재 스크립트는 별도의 warmup/반복 측정/통계적 유의성 검정을 하지 않습니다.
+시간에는 호출 내부 토큰화와 추론을 포함하며 모델 다운로드·로딩, 체크포인트 I/O는 제외합니다. RTX 3070 한 대에서 모든 조건을 실행하고 역할별 장치를 기록합니다. 같은 명령 재실행은 저장된 시간을 재사용하며 새 속도 측정이 아닙니다. 현재 스크립트는 별도의 warmup/반복 측정/통계적 유의성 검정을 하지 않습니다.
 
 Gold evidence는 후속 분석에 사용할 수 있도록 저장합니다. **단어가 겹친다는 이유로 의미적 근거 보존으로 간주하는 점수는 만들지 않습니다.** NotMentioned에도 분류·flip·판단 보존 지표는 동일하게 적용됩니다.
 

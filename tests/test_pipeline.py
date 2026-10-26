@@ -153,6 +153,43 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(len(FakeBackend.calls), previous_calls)
         self.assertEqual(len(FakeCompressor.calls), 3)
 
+    def test_single_gpu_never_has_two_models_loaded(self):
+        active = set()
+        events = []
+
+        class SingleGpuModel(FakeBackend):
+            def __init__(self, config, seed):
+                if active:
+                    raise AssertionError(f"Two models loaded: {active} and {config.name}")
+                super().__init__(config, seed)
+                self.name = config.name
+                active.add(self.name)
+                events.append(("load", self.name))
+
+            def close(self):
+                active.remove(self.name)
+                events.append(("unload", self.name))
+
+        class SingleGpuCompressor(FakeCompressor):
+            def __init__(self, config, seed):
+                if active:
+                    raise AssertionError(f"Two models loaded: {active} and {config.name}")
+                super().__init__(config, seed)
+                self.name = config.name
+                active.add(self.name)
+                events.append(("load", self.name))
+
+            def close(self):
+                active.remove(self.name)
+                events.append(("unload", self.name))
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            result = Experiment(self.config, SingleGpuModel, SingleGpuCompressor, FakeTokenizer).run()
+        self.assertTrue(result["complete"])
+        names = [self.config.summarizer.name, self.config.compressor.name, self.config.judge.name]
+        self.assertEqual(events, [(action, name) for name in names for action in ("load", "unload")])
+        self.assertFalse(active)
+
     def test_stage_handoff(self):
         self.execute("summarize")
         with self.assertRaisesRegex(ValueError, "Missing longllmlingua"):
