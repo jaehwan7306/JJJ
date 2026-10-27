@@ -8,6 +8,16 @@ def mean(values):
     return sum(values) / len(values) if values else None
 
 
+def quantile(values, probability):
+    values = sorted(values)
+    if not values:
+        return None
+    position = (len(values) - 1) * probability
+    lower = int(position)
+    upper = min(lower + 1, len(values) - 1)
+    return values[lower] + (values[upper] - values[lower]) * (position - lower)
+
+
 def classification(rows: list[dict]) -> dict:
     """Macro F1 over all three gold classes; invalid outputs count as errors."""
     if not rows:
@@ -45,6 +55,9 @@ def paired_metrics(original: list[dict], compressed: list[dict]) -> dict:
     correct_original = [(a, b) for a, b in pairs if a["prediction"] == a["gold"]]
     return {
         "paired_n": len(pairs), "valid_pair_n": len(valid),
+        "valid_pair_coverage": len(valid) / len(pairs),
+        "either_invalid_pair_n": len(pairs) - len(valid),
+        "all_pair_output_change_rate": mean(a["prediction"] != b["prediction"] for a, b in pairs),
         "decision_flip_rate": mean(a["prediction"] != b["prediction"] for a, b in valid),
         "decision_agreement_rate": mean(a["prediction"] == b["prediction"] for a, b in valid),
         "original_correct_n": len(correct_original),

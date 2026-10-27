@@ -61,6 +61,9 @@ class FakeBackend:
     def close(self):
         type(self).closed += 1
 
+    def generate_labels(self, messages, max_new_tokens):
+        return self.generate(messages, max_new_tokens)
+
 
 class FakeCompressor:
     calls = []
@@ -68,7 +71,7 @@ class FakeCompressor:
     def __init__(self, config, seed):
         self.identity = {"test_only_compressor": config.name}
 
-    def compress(self, text, hypothesis, retention_ratio):
+    def compress(self, text, hypothesis, retention_ratio, *, budget_mode="target_tokens"):
         self.calls.append((text, hypothesis, retention_ratio))
         return Compression("Short context.", 0.5, 14, int(len(text) * retention_ratio))
 

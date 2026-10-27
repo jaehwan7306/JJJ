@@ -1,0 +1,48 @@
+# Native-settings baseline, Windows / Python 3.11.9 / RTX 5070 12GB.
+# Load this template with `freeze`; run only the resulting frozen JSON config.
+# Model/precision remain the same. This is a NEW experiment, not a resume of v1.
+dataset = "data/contract-nli/test.json"
+expected_dataset_sha256 = "460267b56052a2dc5aead98eb35eadef9e6734d5723d37b4a9790e410f812387"
+output_dir = "outputs/rtx5070_native_v2"
+conditions = ["original", "naive", "contextualized", "longllmlingua"]
+seed = 42
+judge_decoding = "constrained"
+judge_max_new_tokens = 16
+warmup_calls = 1
+shuffle_judgments = true
+require_freeze = true
+
+# No requested summary length. 2048 is an explicit experiment safety cap,
+# not a claimed Qwen default or 2048 judge-token guarantee.
+summary_length_policy = "fixed"
+summary_max_new_tokens = 2048
+
+# Official LongLLMLingua README example rate, NOT compress_prompt's API default
+# (0.5). No target_token override. No fitting, padding, cropping or retry selection.
+retention_ratio = 0.55
+compressor_budget_mode = "rate"
+budget_policy = "target"
+
+[summarizer]
+name = "Qwen/Qwen2.5-7B-Instruct"
+revision = "main"
+device = "cuda"
+dtype = "float16"
+quantization = "4bit"
+max_input_tokens = 32768
+
+[judge]
+name = "Qwen/Qwen3-8B"
+revision = "main"
+device = "cuda"
+dtype = "float16"
+quantization = "4bit"
+max_input_tokens = 32768
+
+[compressor]
+name = "NousResearch/Llama-2-7b-hf"
+revision = "main"
+device = "cuda"
+dtype = "float16"
+quantization = "4bit"
+max_input_tokens = 4096

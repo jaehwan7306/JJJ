@@ -9,6 +9,13 @@ LABELS = ("Entailment", "Contradiction", "NotMentioned")
 EVALUATION_LABELS = LABELS
 
 
+def load_for_config(config):
+    dataset = load_dataset(config.dataset, config.max_documents)
+    if config.expected_dataset_sha256 is not None and dataset.sha256 != config.expected_dataset_sha256:
+        raise ValueError("Dataset SHA256 differs from the frozen protocol; refusing altered data")
+    return dataset
+
+
 @dataclass(frozen=True)
 class Example:
     document_id: str

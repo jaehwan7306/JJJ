@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from .backend import TransformersBackend
 from .config import ModelConfig
+from .prefix import prefix_boundary_from_offsets
 
 
 def split_context(text: str, count_tokens, limit: int = 512) -> list[str]:
@@ -66,6 +67,7 @@ class Compression:
     seconds: float
     scorer_tokens: int
     target_scorer_tokens: int
+    prefix_fallbacks: int = 0
 
 
 class LongLLMLinguaBackend:
@@ -77,25 +79,41 @@ class LongLLMLinguaBackend:
         backend = self.backend
 
         class ReuseModelCompressor(PromptCompressor):
+            def get_prefix_length(self, prefix, text):
+                try:
+                    return super().get_prefix_length(prefix, text)
+                except AssertionError:
+                    result = prefix_boundary_from_offsets(self.tokenizer, prefix, text)
+                    self.prefix_fallbacks += 1
+                    return result
+
             def load_model(self, model_name, device_map="cuda", model_config=None):
                 self.model = LegacyCacheAdapter(backend.model)
                 self.tokenizer = backend.tokenizer
                 self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
                 self.device = str(backend.model.device)
                 self.context_idxs = []
+                self.prefix_fallbacks = 0
                 self.max_position_embeddings = min(config.max_input_tokens,
                                                      backend.model.config.max_position_embeddings)
 
-        self.compressor = ReuseModelCompressor(model_name=config.name, device_map=config.device)
+        try:
+            self.compressor = ReuseModelCompressor(model_name=config.name, device_map=config.device)
+        except BaseException:
+            self.backend.close()
+            raise
         self.identity = {**self.backend.identity, "algorithm": "longllmlingua",
                          "chunk_tokens": 512, "context_budget": "+100",
                          "dynamic_context_compression_ratio": 0.3,
-                         "cache_adapter": "legacy-to-dynamic-v1"}
+                         "cache_adapter": "legacy-to-dynamic-v1",
+                         "prefix_adapter": "original-first-verified-offset-v1"}
 
-    def compress(self, text: str, hypothesis: str, retention_ratio: float) -> Compression:
+    def compress(self, text: str, hypothesis: str, retention_ratio: float, *, budget_mode="target_tokens") -> Compression:
         if self.config.device == "cuda":
             self.backend.torch.cuda.synchronize()
         start = time.perf_counter()
+        previous_fallbacks = self.compressor.prefix_fallbacks
+        self.compressor.context_idxs.clear()
         question = "Determine whether the following hypothesis is entailed, contradicted, or not mentioned: " + hypothesis
         question_tokens = self.backend.count_tokens(question)
         chunk_limit = min(512, self.compressor.max_position_embeddings - question_tokens - 402)
@@ -103,8 +121,20 @@ class LongLLMLinguaBackend:
             raise ValueError("Question too long for LongLLMLingua scoring window; no truncation performed")
         chunks = split_context(text, self.backend.count_tokens, chunk_limit)
         target = max(1, int(self.backend.count_tokens(text) * retention_ratio))
+        if budget_mode == "rate":
+            # Let the upstream formula use its own token counts, including question
+            # and chunk boundaries. Explicit target_token would override rate.
+            budget_kwargs = {"rate": retention_ratio}
+            target = int((sum(self.compressor.get_token_length(c) for c in chunks)
+                          + self.compressor.get_token_length(question)
+                          + self.compressor.get_token_length("")) * retention_ratio
+                         - self.compressor.get_token_length(""))
+        elif budget_mode == "target_tokens":
+            budget_kwargs = {"target_token": target}
+        else:
+            raise ValueError("Unknown compressor budget mode")
         result = self.compressor.compress_prompt(
-            chunks, question=question, target_token=target,
+            chunks, question=question, **budget_kwargs,
             condition_in_question="after_condition", reorder_context="sort",
             dynamic_context_compression_ratio=0.3, condition_compare=True,
             context_budget="+100", rank_method="longllmlingua",
@@ -118,7 +148,8 @@ class LongLLMLinguaBackend:
         scorer_tokens = self.backend.count_tokens(compressed)
         if self.config.device == "cuda":
             self.backend.torch.cuda.synchronize()
-        return Compression(compressed, time.perf_counter() - start, scorer_tokens, target)
+        return Compression(compressed, time.perf_counter() - start, scorer_tokens, target,
+                           self.compressor.prefix_fallbacks - previous_fallbacks)
 
     def close(self):
         self.compressor = None
