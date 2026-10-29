@@ -1,5 +1,8 @@
 # ContractNLI 압축 실험
 
+완료된 RTX 5070 v2 실험은 **[결과 보관본](results/rtx5070_native_v2_2026-10-29/README.md)**에서 확인할 수 있습니다.
+본 실험·dev 검사 결과, 실행 출력이 포함된 노트북, 고정 설정과 무결성 검증 기록을 함께 보관합니다.
+
 현재 실행 파일은 **[v2 PyCharm 노트북](notebooks/run_native_v2_rtx5070_pycharm.ipynb)**입니다.
 Windows · Python **3.11.9** · RTX 5070 약 12GB · 단일 GPU 기준입니다.
 

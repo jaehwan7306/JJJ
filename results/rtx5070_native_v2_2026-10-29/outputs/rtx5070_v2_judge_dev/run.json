@@ -1,0 +1,217 @@
+{
+  "schema_version": 2,
+  "signature": "190e7409f45889edf899600f4bef40094e07ae8d6a158f0c02faf6260f834eac",
+  "config": {
+    "dataset": "C:\\Users\\user\\Desktop\\JJJ-main1\\data\\contract-nli\\dev.json",
+    "expected_dataset_sha256": "310af7d661d2ab50ee3700169cef524c75f39fb296bbf5a515c229eb0f42e68e",
+    "output_dir": "outputs/rtx5070_v2_judge_dev",
+    "conditions": [
+      "original"
+    ],
+    "retention_ratio": 0.55,
+    "judge_max_new_tokens": 16,
+    "seed": 42,
+    "max_documents": null,
+    "judge_decoding": "constrained",
+    "budget_policy": "target",
+    "budget_attempt_limit": 6,
+    "warmup_calls": 1,
+    "shuffle_judgments": true,
+    "require_pinned_revisions": true,
+    "require_freeze": true,
+    "summary_length_policy": "fixed",
+    "summary_max_new_tokens": 2048,
+    "compressor_budget_mode": "rate",
+    "summarizer": {
+      "name": "Qwen/Qwen2.5-7B-Instruct",
+      "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+      "device": "cuda",
+      "dtype": "float16",
+      "quantization": "4bit",
+      "max_input_tokens": 32768
+    },
+    "judge": {
+      "name": "Qwen/Qwen3-8B",
+      "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "device": "cuda",
+      "dtype": "float16",
+      "quantization": "4bit",
+      "max_input_tokens": 32768
+    },
+    "compressor": {
+      "name": "NousResearch/Llama-2-7b-hf",
+      "revision": "8efe6c9b93655b934e27bd9981e3ec13e55aee9d",
+      "device": "cuda",
+      "dtype": "float16",
+      "quantization": "4bit",
+      "max_input_tokens": 4096
+    }
+  },
+  "dataset": {
+    "documents": 61,
+    "evaluated_pairs": 1037,
+    "gold_label_counts": {
+      "Entailment": 519,
+      "Contradiction": 95,
+      "NotMentioned": 423
+    },
+    "gold_evidence_available_pairs": 614,
+    "not_mentioned_pairs": 423,
+    "conditions": [
+      "original"
+    ],
+    "target_token_retention": null,
+    "summary_length_policy": "fixed",
+    "summary_max_new_tokens": 2048,
+    "compressor_budget_mode": "rate",
+    "compressor_rate": 0.55,
+    "compressor_context_target_ratio": null,
+    "judge_decoding": "constrained",
+    "budget_policy": "target",
+    "summary_requests": 0,
+    "question_aware_compression_requests": 0,
+    "judgment_requests": 1037,
+    "dataset_sha256": "310af7d661d2ab50ee3700169cef524c75f39fb296bbf5a515c229eb0f42e68e",
+    "partial_dataset": false
+  },
+  "stages": {
+    "summarize": {
+      "last_invocation_wall_seconds": 8.00006091594696e-06,
+      "completed": true
+    },
+    "compress": {
+      "last_invocation_wall_seconds": 3.00002284348011e-06,
+      "completed": true
+    },
+    "judge": {
+      "last_invocation_wall_seconds": 1118.2730811999645,
+      "completed": true
+    },
+    "report": {
+      "last_invocation_wall_seconds": 0.008490499923937023,
+      "completed": true
+    },
+    "all": {
+      "last_invocation_wall_seconds": 1118.2886417000555,
+      "completed": true
+    }
+  },
+  "models": {
+    "reference_tokenizer": {
+      "name": "Qwen/Qwen3-8B",
+      "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "resolved_revision": null,
+      "packages": {
+        "python": "3.11.9",
+        "platform": "Windows-10-10.0.26200-SP0",
+        "machine": "AMD64",
+        "execution_host": "DESKTOP-M336IEP",
+        "torch": "2.8.0+cu128",
+        "transformers": "4.51.3",
+        "accelerate": "1.15.0",
+        "bitsandbytes": "0.48.1",
+        "llmlingua": "0.2.2",
+        "tokenizers": "0.21.4",
+        "huggingface_hub": "0.36.2",
+        "safetensors": "0.8.0",
+        "sentencepiece": "0.2.2",
+        "protobuf": "7.36.2",
+        "numpy": "2.4.6"
+      }
+    },
+    "judge": {
+      "name": "Qwen/Qwen3-8B",
+      "requested_revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "resolved_revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "tokenizer_revision": null,
+      "device": "cuda:0",
+      "dtype": "float16",
+      "quantization": "4bit",
+      "attention_implementation": "sdpa",
+      "inference_batch_size": 1,
+      "device_name": "NVIDIA GeForce RTX 5070",
+      "torch_cuda": "12.8",
+      "cudnn": 91002,
+      "tf32": false,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "gpu_capability": [
+        12,
+        0
+      ],
+      "gpu_total_bytes": 12820480000,
+      "packages": {
+        "python": "3.11.9",
+        "platform": "Windows-10-10.0.26200-SP0",
+        "machine": "AMD64",
+        "execution_host": "DESKTOP-M336IEP",
+        "torch": "2.8.0+cu128",
+        "transformers": "4.51.3",
+        "accelerate": "1.15.0",
+        "bitsandbytes": "0.48.1",
+        "llmlingua": "0.2.2",
+        "tokenizers": "0.21.4",
+        "huggingface_hub": "0.36.2",
+        "safetensors": "0.8.0",
+        "sentencepiece": "0.2.2",
+        "protobuf": "7.36.2",
+        "numpy": "2.4.6"
+      }
+    }
+  },
+  "invocations": [
+    {
+      "stage": "all",
+      "contexts_before": 0,
+      "predictions_before": 0,
+      "status": "completed",
+      "active_stage": "report",
+      "wall_seconds": 1118.2886429000646,
+      "contexts_after": 0,
+      "predictions_after": 1037
+    }
+  ],
+  "model_preparation": [
+    {
+      "role": "judge",
+      "wall_seconds": 14.851827399921604,
+      "may_include_download": true,
+      "excluded_from_inference_metrics": true
+    }
+  ],
+  "inference_environment": {
+    "device_name": "NVIDIA GeForce RTX 5070",
+    "gpu_capability": [
+      12,
+      0
+    ],
+    "gpu_total_bytes": 12820480000,
+    "torch_cuda": "12.8",
+    "cudnn": 91002,
+    "packages": {
+      "python": "3.11.9",
+      "platform": "Windows-10-10.0.26200-SP0",
+      "machine": "AMD64",
+      "execution_host": "DESKTOP-M336IEP",
+      "torch": "2.8.0+cu128",
+      "transformers": "4.51.3",
+      "accelerate": "1.15.0",
+      "bitsandbytes": "0.48.1",
+      "llmlingua": "0.2.2",
+      "tokenizers": "0.21.4",
+      "huggingface_hub": "0.36.2",
+      "safetensors": "0.8.0",
+      "sentencepiece": "0.2.2",
+      "protobuf": "7.36.2",
+      "numpy": "2.4.6"
+    }
+  },
+  "warmups": [
+    {
+      "role": "judge",
+      "calls": 1,
+      "wall_seconds": 0.9192558999639004,
+      "excluded_from_inference_metrics": true
+    }
+  ]
+}

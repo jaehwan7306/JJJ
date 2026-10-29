@@ -1,0 +1,341 @@
+{
+  "schema_version": 2,
+  "signature": "2ae8283f6cc214bd55ecc5ee1ce9bb627cbddcacdbeada6b1ced8bdc8e986e8b",
+  "config": {
+    "dataset": "C:\\Users\\user\\Desktop\\JJJ-main1\\data\\contract-nli\\dev.json",
+    "expected_dataset_sha256": "310af7d661d2ab50ee3700169cef524c75f39fb296bbf5a515c229eb0f42e68e",
+    "output_dir": "outputs/rtx5070_native_v2_dev_smoke",
+    "conditions": [
+      "original",
+      "naive",
+      "contextualized",
+      "longllmlingua"
+    ],
+    "retention_ratio": 0.55,
+    "judge_max_new_tokens": 16,
+    "seed": 42,
+    "max_documents": 1,
+    "judge_decoding": "constrained",
+    "budget_policy": "target",
+    "budget_attempt_limit": 6,
+    "warmup_calls": 1,
+    "shuffle_judgments": true,
+    "require_pinned_revisions": true,
+    "require_freeze": true,
+    "summary_length_policy": "fixed",
+    "summary_max_new_tokens": 2048,
+    "compressor_budget_mode": "rate",
+    "summarizer": {
+      "name": "Qwen/Qwen2.5-7B-Instruct",
+      "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+      "device": "cuda",
+      "dtype": "float16",
+      "quantization": "4bit",
+      "max_input_tokens": 32768
+    },
+    "judge": {
+      "name": "Qwen/Qwen3-8B",
+      "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "device": "cuda",
+      "dtype": "float16",
+      "quantization": "4bit",
+      "max_input_tokens": 32768
+    },
+    "compressor": {
+      "name": "NousResearch/Llama-2-7b-hf",
+      "revision": "8efe6c9b93655b934e27bd9981e3ec13e55aee9d",
+      "device": "cuda",
+      "dtype": "float16",
+      "quantization": "4bit",
+      "max_input_tokens": 4096
+    }
+  },
+  "dataset": {
+    "documents": 1,
+    "evaluated_pairs": 17,
+    "gold_label_counts": {
+      "Entailment": 14,
+      "Contradiction": 1,
+      "NotMentioned": 2
+    },
+    "gold_evidence_available_pairs": 15,
+    "not_mentioned_pairs": 2,
+    "conditions": [
+      "original",
+      "naive",
+      "contextualized",
+      "longllmlingua"
+    ],
+    "target_token_retention": null,
+    "summary_length_policy": "fixed",
+    "summary_max_new_tokens": 2048,
+    "compressor_budget_mode": "rate",
+    "compressor_rate": 0.55,
+    "compressor_context_target_ratio": null,
+    "judge_decoding": "constrained",
+    "budget_policy": "target",
+    "summary_requests": 2,
+    "question_aware_compression_requests": 17,
+    "judgment_requests": 68,
+    "dataset_sha256": "310af7d661d2ab50ee3700169cef524c75f39fb296bbf5a515c229eb0f42e68e",
+    "partial_dataset": true
+  },
+  "stages": {
+    "summarize": {
+      "last_invocation_wall_seconds": 0.00010730000212788582,
+      "completed": true
+    },
+    "compress": {
+      "last_invocation_wall_seconds": 5.7999975979328156e-05,
+      "completed": true
+    },
+    "judge": {
+      "last_invocation_wall_seconds": 7.429998368024826e-05,
+      "completed": true
+    },
+    "report": {
+      "last_invocation_wall_seconds": 0.004510900005698204,
+      "completed": true
+    },
+    "all": {
+      "last_invocation_wall_seconds": 0.01594510010909289,
+      "completed": true
+    }
+  },
+  "models": {
+    "reference_tokenizer": {
+      "name": "Qwen/Qwen3-8B",
+      "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "resolved_revision": null,
+      "packages": {
+        "python": "3.11.9",
+        "platform": "Windows-10-10.0.26200-SP0",
+        "machine": "AMD64",
+        "execution_host": "DESKTOP-M336IEP",
+        "torch": "2.8.0+cu128",
+        "transformers": "4.51.3",
+        "accelerate": "1.15.0",
+        "bitsandbytes": "0.48.1",
+        "llmlingua": "0.2.2",
+        "tokenizers": "0.21.4",
+        "huggingface_hub": "0.36.2",
+        "safetensors": "0.8.0",
+        "sentencepiece": "0.2.2",
+        "protobuf": "7.36.2",
+        "numpy": "2.4.6"
+      }
+    },
+    "summarizer": {
+      "name": "Qwen/Qwen2.5-7B-Instruct",
+      "requested_revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+      "resolved_revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+      "tokenizer_revision": null,
+      "device": "cuda:0",
+      "dtype": "float16",
+      "quantization": "4bit",
+      "attention_implementation": "sdpa",
+      "inference_batch_size": 1,
+      "device_name": "NVIDIA GeForce RTX 5070",
+      "torch_cuda": "12.8",
+      "cudnn": 91002,
+      "tf32": false,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "gpu_capability": [
+        12,
+        0
+      ],
+      "gpu_total_bytes": 12820480000,
+      "packages": {
+        "python": "3.11.9",
+        "platform": "Windows-10-10.0.26200-SP0",
+        "machine": "AMD64",
+        "execution_host": "DESKTOP-M336IEP",
+        "torch": "2.8.0+cu128",
+        "transformers": "4.51.3",
+        "accelerate": "1.15.0",
+        "bitsandbytes": "0.48.1",
+        "llmlingua": "0.2.2",
+        "tokenizers": "0.21.4",
+        "huggingface_hub": "0.36.2",
+        "safetensors": "0.8.0",
+        "sentencepiece": "0.2.2",
+        "protobuf": "7.36.2",
+        "numpy": "2.4.6"
+      }
+    },
+    "compressor": {
+      "name": "NousResearch/Llama-2-7b-hf",
+      "requested_revision": "8efe6c9b93655b934e27bd9981e3ec13e55aee9d",
+      "resolved_revision": "8efe6c9b93655b934e27bd9981e3ec13e55aee9d",
+      "tokenizer_revision": null,
+      "device": "cuda:0",
+      "dtype": "float16",
+      "quantization": "4bit",
+      "attention_implementation": "sdpa",
+      "inference_batch_size": 1,
+      "device_name": "NVIDIA GeForce RTX 5070",
+      "torch_cuda": "12.8",
+      "cudnn": 91002,
+      "tf32": false,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "gpu_capability": [
+        12,
+        0
+      ],
+      "gpu_total_bytes": 12820480000,
+      "algorithm": "longllmlingua",
+      "chunk_tokens": 512,
+      "context_budget": "+100",
+      "dynamic_context_compression_ratio": 0.3,
+      "cache_adapter": "legacy-to-dynamic-v1",
+      "prefix_adapter": "original-first-verified-offset-v1",
+      "packages": {
+        "python": "3.11.9",
+        "platform": "Windows-10-10.0.26200-SP0",
+        "machine": "AMD64",
+        "execution_host": "DESKTOP-M336IEP",
+        "torch": "2.8.0+cu128",
+        "transformers": "4.51.3",
+        "accelerate": "1.15.0",
+        "bitsandbytes": "0.48.1",
+        "llmlingua": "0.2.2",
+        "tokenizers": "0.21.4",
+        "huggingface_hub": "0.36.2",
+        "safetensors": "0.8.0",
+        "sentencepiece": "0.2.2",
+        "protobuf": "7.36.2",
+        "numpy": "2.4.6"
+      }
+    },
+    "judge": {
+      "name": "Qwen/Qwen3-8B",
+      "requested_revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "resolved_revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "tokenizer_revision": null,
+      "device": "cuda:0",
+      "dtype": "float16",
+      "quantization": "4bit",
+      "attention_implementation": "sdpa",
+      "inference_batch_size": 1,
+      "device_name": "NVIDIA GeForce RTX 5070",
+      "torch_cuda": "12.8",
+      "cudnn": 91002,
+      "tf32": false,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "gpu_capability": [
+        12,
+        0
+      ],
+      "gpu_total_bytes": 12820480000,
+      "packages": {
+        "python": "3.11.9",
+        "platform": "Windows-10-10.0.26200-SP0",
+        "machine": "AMD64",
+        "execution_host": "DESKTOP-M336IEP",
+        "torch": "2.8.0+cu128",
+        "transformers": "4.51.3",
+        "accelerate": "1.15.0",
+        "bitsandbytes": "0.48.1",
+        "llmlingua": "0.2.2",
+        "tokenizers": "0.21.4",
+        "huggingface_hub": "0.36.2",
+        "safetensors": "0.8.0",
+        "sentencepiece": "0.2.2",
+        "protobuf": "7.36.2",
+        "numpy": "2.4.6"
+      }
+    }
+  },
+  "invocations": [
+    {
+      "stage": "all",
+      "contexts_before": 0,
+      "predictions_before": 0,
+      "status": "completed",
+      "active_stage": "report",
+      "wall_seconds": 219.74552660004701,
+      "contexts_after": 19,
+      "predictions_after": 68
+    },
+    {
+      "stage": "all",
+      "contexts_before": 19,
+      "predictions_before": 68,
+      "status": "completed",
+      "active_stage": "report",
+      "wall_seconds": 0.015946800005622208,
+      "contexts_after": 19,
+      "predictions_after": 68
+    }
+  ],
+  "model_preparation": [
+    {
+      "role": "summarizer",
+      "wall_seconds": 14.185871199937537,
+      "may_include_download": true,
+      "excluded_from_inference_metrics": true
+    },
+    {
+      "role": "compressor",
+      "wall_seconds": 13.008350200019777,
+      "may_include_download": true,
+      "excluded_from_inference_metrics": true
+    },
+    {
+      "role": "judge",
+      "wall_seconds": 14.944927799981087,
+      "may_include_download": true,
+      "excluded_from_inference_metrics": true
+    }
+  ],
+  "inference_environment": {
+    "device_name": "NVIDIA GeForce RTX 5070",
+    "gpu_capability": [
+      12,
+      0
+    ],
+    "gpu_total_bytes": 12820480000,
+    "torch_cuda": "12.8",
+    "cudnn": 91002,
+    "packages": {
+      "python": "3.11.9",
+      "platform": "Windows-10-10.0.26200-SP0",
+      "machine": "AMD64",
+      "execution_host": "DESKTOP-M336IEP",
+      "torch": "2.8.0+cu128",
+      "transformers": "4.51.3",
+      "accelerate": "1.15.0",
+      "bitsandbytes": "0.48.1",
+      "llmlingua": "0.2.2",
+      "tokenizers": "0.21.4",
+      "huggingface_hub": "0.36.2",
+      "safetensors": "0.8.0",
+      "sentencepiece": "0.2.2",
+      "protobuf": "7.36.2",
+      "numpy": "2.4.6"
+    }
+  },
+  "warmups": [
+    {
+      "role": "summarizer",
+      "calls": 1,
+      "wall_seconds": 0.9937308999942616,
+      "excluded_from_inference_metrics": true
+    },
+    {
+      "role": "compressor",
+      "calls": 1,
+      "wall_seconds": 0.30340309999883175,
+      "excluded_from_inference_metrics": true
+    },
+    {
+      "role": "judge",
+      "calls": 1,
+      "wall_seconds": 0.4259105999954045,
+      "excluded_from_inference_metrics": true
+    }
+  ]
+}

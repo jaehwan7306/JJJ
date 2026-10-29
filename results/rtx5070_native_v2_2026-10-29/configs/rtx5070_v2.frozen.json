@@ -1,0 +1,49 @@
+{
+  "dataset": "data/contract-nli/test.json",
+  "expected_dataset_sha256": "460267b56052a2dc5aead98eb35eadef9e6734d5723d37b4a9790e410f812387",
+  "output_dir": "outputs/rtx5070_native_v2",
+  "conditions": [
+    "original",
+    "naive",
+    "contextualized",
+    "longllmlingua"
+  ],
+  "retention_ratio": 0.55,
+  "judge_max_new_tokens": 16,
+  "seed": 42,
+  "max_documents": null,
+  "judge_decoding": "constrained",
+  "budget_policy": "target",
+  "budget_attempt_limit": 6,
+  "warmup_calls": 1,
+  "shuffle_judgments": true,
+  "require_pinned_revisions": true,
+  "require_freeze": true,
+  "summary_length_policy": "fixed",
+  "summary_max_new_tokens": 2048,
+  "compressor_budget_mode": "rate",
+  "summarizer": {
+    "name": "Qwen/Qwen2.5-7B-Instruct",
+    "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+    "device": "cuda",
+    "dtype": "float16",
+    "quantization": "4bit",
+    "max_input_tokens": 32768
+  },
+  "judge": {
+    "name": "Qwen/Qwen3-8B",
+    "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+    "device": "cuda",
+    "dtype": "float16",
+    "quantization": "4bit",
+    "max_input_tokens": 32768
+  },
+  "compressor": {
+    "name": "NousResearch/Llama-2-7b-hf",
+    "revision": "8efe6c9b93655b934e27bd9981e3ec13e55aee9d",
+    "device": "cuda",
+    "dtype": "float16",
+    "quantization": "4bit",
+    "max_input_tokens": 4096
+  }
+}

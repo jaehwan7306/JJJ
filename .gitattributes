@@ -1,0 +1,2 @@
+# Preserve the uploaded Windows experiment artifacts byte for byte on checkout.
+/results/rtx5070_native_v2_2026-10-29/** -text whitespace=trailing-space,space-before-tab,cr-at-eol

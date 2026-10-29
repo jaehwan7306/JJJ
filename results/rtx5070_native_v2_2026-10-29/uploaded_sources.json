@@ -1,0 +1,19 @@
+{
+  "uploaded_files": [
+    {
+      "filename": "outputs.zip",
+      "bytes": 3414737,
+      "sha256": "57bfb02c3f982543a5c295ae77afd8e2be2e022f874b645170c3f780edf7cebe"
+    },
+    {
+      "filename": "run_native_v2_rtx5070_pycharm.ipynb",
+      "bytes": 763780,
+      "sha256": "71d1bfba0d613153fc5d516ebd135d993ce259ee94205feee9e7a1c59cf7f559"
+    },
+    {
+      "filename": "rtx5070_v2.frozen.json",
+      "bytes": 1405,
+      "sha256": "6f5a07fd62c1cc82c8dcccc10033cff7e64b4341bca884b355f457b9aa024493"
+    }
+  ]
+}

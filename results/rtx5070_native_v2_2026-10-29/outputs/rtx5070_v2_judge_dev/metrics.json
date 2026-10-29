@@ -1,0 +1,167 @@
+{
+  "schema_version": 2,
+  "complete": true,
+  "signature": "190e7409f45889edf899600f4bef40094e07ae8d6a158f0c02faf6260f834eac",
+  "dataset": {
+    "documents": 61,
+    "evaluated_pairs": 1037,
+    "gold_label_counts": {
+      "Entailment": 519,
+      "Contradiction": 95,
+      "NotMentioned": 423
+    },
+    "gold_evidence_available_pairs": 614,
+    "not_mentioned_pairs": 423,
+    "conditions": [
+      "original"
+    ],
+    "target_token_retention": null,
+    "summary_length_policy": "fixed",
+    "summary_max_new_tokens": 2048,
+    "compressor_budget_mode": "rate",
+    "compressor_rate": 0.55,
+    "compressor_context_target_ratio": null,
+    "judge_decoding": "constrained",
+    "budget_policy": "target",
+    "summary_requests": 0,
+    "question_aware_compression_requests": 0,
+    "judgment_requests": 1037,
+    "dataset_sha256": "310af7d661d2ab50ee3700169cef524c75f39fb296bbf5a515c229eb0f42e68e",
+    "partial_dataset": false
+  },
+  "metrics": {
+    "original": {
+      "n": 1037,
+      "accuracy": 0.660559305689489,
+      "macro_f1": 0.5248786024226458,
+      "per_label": {
+        "Entailment": {
+          "support": 519,
+          "precision": 0.7597402597402597,
+          "recall": 0.6763005780346821,
+          "f1": 0.7155963302752294
+        },
+        "Contradiction": {
+          "support": 95,
+          "precision": 0.42857142857142855,
+          "recall": 0.12631578947368421,
+          "f1": 0.1951219512195122
+        },
+        "NotMentioned": {
+          "support": 423,
+          "precision": 0.5886654478976234,
+          "recall": 0.7612293144208038,
+          "f1": 0.6639175257731958
+        }
+      },
+      "invalid_outputs": 0,
+      "not_mentioned_outputs": 547,
+      "confusion": {
+        "Entailment": {
+          "Entailment": 351,
+          "Contradiction": 11,
+          "NotMentioned": 157,
+          "Invalid": 0
+        },
+        "Contradiction": {
+          "Entailment": 15,
+          "Contradiction": 12,
+          "NotMentioned": 68,
+          "Invalid": 0
+        },
+        "NotMentioned": {
+          "Entailment": 96,
+          "Contradiction": 5,
+          "NotMentioned": 322,
+          "Invalid": 0
+        }
+      },
+      "compression_calls": 0,
+      "compression_seconds": 0,
+      "judgment_seconds": 1091.7814389008563,
+      "total_inference_seconds": 1091.7814389008563,
+      "amortized_seconds_per_pair": 1.052826845613169,
+      "mean_actual_token_retention": 1.0,
+      "corpus_token_retention": 1.0,
+      "median_actual_token_retention": 1.0,
+      "p10_actual_token_retention": 1.0,
+      "p90_actual_token_retention": 1.0,
+      "judgment_median_seconds": 0.9702907999744639,
+      "judgment_p95_seconds": 1.951595699926833,
+      "judgment_length_capped_calls": 0,
+      "judgment_prompt_tokens": 2551273,
+      "judgment_output_tokens": 4695,
+      "invalid_output_rate": 0.0,
+      "over_target_context_calls": 0,
+      "length_capped_summary_calls": 0,
+      "first_line_sensitivity": {
+        "n": 1037,
+        "accuracy": 0.660559305689489,
+        "macro_f1": 0.5248786024226458,
+        "per_label": {
+          "Entailment": {
+            "support": 519,
+            "precision": 0.7597402597402597,
+            "recall": 0.6763005780346821,
+            "f1": 0.7155963302752294
+          },
+          "Contradiction": {
+            "support": 95,
+            "precision": 0.42857142857142855,
+            "recall": 0.12631578947368421,
+            "f1": 0.1951219512195122
+          },
+          "NotMentioned": {
+            "support": 423,
+            "precision": 0.5886654478976234,
+            "recall": 0.7612293144208038,
+            "f1": 0.6639175257731958
+          }
+        },
+        "invalid_outputs": 0,
+        "not_mentioned_outputs": 547,
+        "confusion": {
+          "Entailment": {
+            "Entailment": 351,
+            "Contradiction": 11,
+            "NotMentioned": 157,
+            "Invalid": 0
+          },
+          "Contradiction": {
+            "Entailment": 15,
+            "Contradiction": 12,
+            "NotMentioned": 68,
+            "Invalid": 0
+          },
+          "NotMentioned": {
+            "Entailment": 96,
+            "Contradiction": 5,
+            "NotMentioned": 322,
+            "Invalid": 0
+          }
+        }
+      }
+    }
+  },
+  "protocol": {
+    "judge_decoding": "constrained",
+    "budget_policy": "target",
+    "summary_length_policy": "fixed",
+    "compressor_budget_mode": "rate",
+    "warmup_calls_per_model_load": 1,
+    "judgment_order": "seeded hash interleaving",
+    "length_matched": false,
+    "timing_is_repeated_benchmark": false
+  },
+  "notes": [
+    "Three gold classes retained, including NotMentioned.",
+    "No semantic gold-evidence preservation score is computed in the base experiment.",
+    "Lengths use the judge tokenizer; native compressor rate and summary generation cap are distinct, not a common output length.",
+    "Inference time includes per-call tokenization and compression/generation, excludes model loading and checkpoint I/O.",
+    "All budget-fitting inference attempts count toward compression time when reference_cap is enabled.",
+    "Warmup calls are logged separately and excluded; measurement is single-pass operational latency, not a repeated benchmark.",
+    "Native settings compare method behavior at unequal achieved lengths, not a length-controlled causal effect.",
+    "LongLLMLingua rate uses the upstream native-token formula including question/chunk accounting; it is not an exact judge-token ratio.",
+    "Repeated runs reuse stored timings; they are not new latency measurements."
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "validation_date": "2026-10-29",
+  "source_commit": "0e93f90",
+  "model_inference_rerun": false,
+  "uploaded_output_bytes_unchanged": true,
+  "frozen_config_matches_main_run": true,
+  "notebook_has_error_outputs": false,
+  "notebook_schema_validated": false,
+  "numeric_absolute_tolerance": 1e-12,
+  "runs": [
+    {
+      "run": "rtx5070_native_v2",
+      "documents": 123,
+      "predictions": 8364,
+      "contexts": 2337,
+      "signature": "b3160fbdf57403ae5d6b60bd3ab9f5be74bc2338ec48e9f986356e690fda4a9f",
+      "checks": {
+        "source_config_dataset_signature": true,
+        "checkpoint_metadata_and_fingerprints": true,
+        "all_report_metrics_reproduced": true
+      },
+      "max_absolute_numeric_difference": 1.5543122344752192e-15
+    },
+    {
+      "run": "rtx5070_native_v2_dev_smoke",
+      "documents": 1,
+      "predictions": 68,
+      "contexts": 19,
+      "signature": "2ae8283f6cc214bd55ecc5ee1ce9bb627cbddcacdbeada6b1ced8bdc8e986e8b",
+      "checks": {
+        "source_config_dataset_signature": true,
+        "checkpoint_metadata_and_fingerprints": true,
+        "all_report_metrics_reproduced": true
+      },
+      "max_absolute_numeric_difference": 5.551115123125783e-17
+    },
+    {
+      "run": "rtx5070_v2_judge_dev",
+      "documents": 61,
+      "predictions": 1037,
+      "contexts": 0,
+      "signature": "190e7409f45889edf899600f4bef40094e07ae8d6a158f0c02faf6260f834eac",
+      "checks": {
+        "source_config_dataset_signature": true,
+        "checkpoint_metadata_and_fingerprints": true,
+        "all_report_metrics_reproduced": true
+      },
+      "max_absolute_numeric_difference": 0
+    }
+  ]
+}
